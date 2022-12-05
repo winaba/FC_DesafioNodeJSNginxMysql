@@ -15,8 +15,8 @@ services:
       - MYSQL_DATABASE=nodedb
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_PASSWORD=root
-    ports:
-      - 3306:3306    
+    # ports:
+    #   - 3306:3306    
     networks:
       - node-network
 
@@ -43,9 +43,11 @@ services:
     image: winaba/nginx   
     tty: true
     ports:
-      - 8080:8080
+      - 8080:80
     networks:
       - node-network
+    depends_on:
+      - nodejs  
 
 networks:
   node-network:
