@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: db
+    image: mysql:5.7
+    command: ["--innodb-use-native-aio=0"]
+    command: --init-file /data/application/init.sql
+    restart: always
+    tty: true
+    volumes:
+      - ./db/mysql:/var/lib/mysql
+      - ./db/init.sql:/data/application/init.sql
+    environment:
+      - MYSQL_DATABASE=nodedb
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_PASSWORD=root
+    ports:
+      - 3306:3306    
+    networks:
+      - node-network
+
+  nodejs:
+    container_name: nodejs
+    build:
+      context: ./nodejs
+      dockerfile: Dockerfile
+    image: winaba/nodejs   
+    entrypoint: wait-for db:3306 -t 40 -- node index.js
+    tty: true
+    ports:
+      - 3000:3000
+    networks:
+      - node-network
+    depends_on:
+      - db
+
+  nginx:
+    container_name: nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: winaba/nginx   
+    tty: true
+    ports:
+      - 8080:8080
+    networks:
+      - node-network
+
+networks:
+  node-network:
+    driver: bridge
